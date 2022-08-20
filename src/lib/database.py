@@ -8,11 +8,12 @@ def _execute_sql_query(query, database="tickers.db"):
         CREATE TABLE IF NOT EXISTS tickers (
             symbol TEXT,
             name TEXT,
-            market_cap INTEGER,
+            value INTEGER,
             date TEXT
         )
         """
     )
+    print(query)
     results = cur.execute(query).fetchall()
     con.commit()
     con.close()
@@ -27,17 +28,20 @@ def insert_ticker(ticker):
         INSERT INTO tickers VALUES (
             '{ticker["symbol"]}',
             '{ticker["name"]}',
-            '{ticker["market_cap"]}',
+            '{ticker["value"]}',
             '{ticker["date"]}'
         )
         """
     )
 
-def fetch_all_tickers(ticker=None):
+def fetch_all_tickers(**filters):
     """
     Obtiene tickers de la base de datos.
     """
-    where_clause = "" if not ticker else f"WHERE symbol = '{ticker}'"
+    where_clause = "" if not filters else "WHERE "
+    for key, value in filters.items():
+        where_clause += f"{key} = '{value}' AND "
+    where_clause = where_clause.rstrip(" AND ")
     rows = _execute_sql_query(
         f"""
         SELECT *
@@ -48,7 +52,7 @@ def fetch_all_tickers(ticker=None):
     row_to_dict = lambda row: {
         "ticker": row[0],
         "name": row[1],
-        "market_cap": row[2],
+        "value": row[2],
         "date": row[3]
     }
     return [row_to_dict(row) for row in rows]

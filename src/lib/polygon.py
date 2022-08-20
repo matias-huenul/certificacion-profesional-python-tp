@@ -20,6 +20,6 @@ def get_ticker(ticker, date):
     return {
         "symbol": result["ticker"],
         "name": result["name"],
-        "market_cap": result["market_cap"],
+        "value": result["market_cap"] / result["weighted_shares_outstanding"],
         "date": date,
     }

@@ -17,7 +17,7 @@ import lib.plot as plot
 from time import sleep
 from datetime import datetime
 
-def get_tickers(ticker, start_date, end_date):
+def get_tickers(symbol, start_date, end_date):
     """
     Realiza una llamada a la API de Ticker y guarda
     los resultados en la base de datos.
@@ -26,8 +26,14 @@ def get_tickers(ticker, start_date, end_date):
     tickers = []
     start = datetime.strptime(start_date, "%Y/%m/%d")
     end = datetime.strptime(end_date, "%Y/%m/%d")
-    for date in utils.get_date_range(start, end):
-        ticker = polygon.get_ticker(ticker, date.strftime("%Y-%m-%d"))
+    for dt in utils.get_date_range(start, end):
+        date = dt.strftime("%Y-%m-%d")
+        if db.fetch_all_tickers(symbol=symbol, date=date):
+            print(f"Ticker {symbol} con fecha {date} ya existente "
+                "en la base de datos, se omite la solicitud a la API.")
+            continue
+        ticker = polygon.get_ticker(symbol, date)
+        sleep(10)
         tickers.append(ticker)
     for ticker in tickers:
         db.insert_ticker(ticker)
@@ -48,12 +54,12 @@ def plot_ticker(ticker):
     """
     Grafica los datos guardados para un ticker específico.
     """
-    data = db.fetch_all_tickers(ticker=ticker)
+    data = db.fetch_all_tickers(symbol=ticker)
     plot.line_plot(
-        "Ticker",
+        f"Visualización del ticker {ticker}",
         data,
         x="date",
-        y="market_cap",
+        y="value",
         xlabel="Fecha",
         ylabel="Valor"
     )

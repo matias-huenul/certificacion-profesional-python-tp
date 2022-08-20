@@ -3,8 +3,22 @@ import matplotlib.pyplot as plt
 def line_plot(title, data, x, xlabel, y, ylabel):
     x_values = [item[x] for item in data]
     y_values = [item[y] for item in data]
-    _, ax = plt.subplots()
-    ax.plot(x_values, y_values)
-    ax.set(title=title, xlabel=xlabel, ylabel=ylabel)
-    # ax.grid()
+    fig, ax = plt.subplots()
+    fig.figure.set_size_inches(10, 5)
+
+    ax.plot(x_values, y_values, linewidth=2)
+    ax.yaxis.set_major_formatter("${x:1.2f}")
+    ax.set_facecolor("#f5f0ed")
+    ax.grid(color="#ffffff")
+
+    ax.set_title(title, fontdict={"fontsize": 16})
+    ax.set_xlabel(xlabel, fontdict={"fontsize": 12})
+    ax.set_ylabel(ylabel, fontdict={"fontsize": 12})
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#c2ae97")
+    ax.spines["bottom"].set_color("#c2ae97")
+
+    plt.xticks(rotation=45)
     plt.show()
