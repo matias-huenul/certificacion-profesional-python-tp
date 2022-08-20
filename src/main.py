@@ -1,5 +1,10 @@
 #! /usr/bin/env python3
 
+"""
+Certificación Profesional en Python (ITBA) | Trabajo Práctico Final
+Alumno: Matías Huenul
+"""
+
 class OperationError(Exception):
     """
     Excepción a ser lanzada ante un código de
