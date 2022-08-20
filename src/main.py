@@ -6,101 +6,93 @@ Alumno: Matías Huenul
 """
 
 import os
+import traceback
 import requests
 import sqlite3
 import lib.utils as utils
 import lib.database as db
 import lib.exceptions as exc
 import lib.polygon as polygon
+from time import sleep
 from datetime import datetime
-
-POLYGON_API_TOKEN = None
-
-def setup():
-    """
-    Configura las variables necesarias para la ejecución
-    del programa. Lanza una excepción en caso de detectar
-    algún error de configuración.
-    """
-    try:
-        POLYGON_API_TOKEN = os.environ["POLYGON_API_TOKEN"]
-    except KeyError:
-        raise SetupError
 
 def get_tickers(ticker, start_date, end_date):
     """
-    Realiza una llamada a la API de Ticker y devuelve
-    el resultado.
+    Realiza una llamada a la API de Ticker y guarda
+    los resultados en la base de datos.
     """
-    results = []
+    print("Pidiendo datos...")
+    tickers = []
     start = datetime.strptime(start_date, "%Y/%m/%d")
     end = datetime.strptime(end_date, "%Y/%m/%d")
     for date in utils.get_date_range(start, end):
-        data = polygon.get_ticker(
-            ticker, POLYGON_API_TOKEN, date.strftime("%Y-%m-%d"))
-        if data["status"] != "OK":
-            raise exc.APIError
-        results.append(data["results"])
-    return results
+        ticker = polygon.get_ticker(ticker, date.strftime("%Y-%m-%d"))
+        tickers.append(ticker)
+    for ticker in tickers:
+        db.insert_ticker(ticker)
+    print("Datos guardados correctamente")
 
-def get_all_tickers():
+def show_tickers():
     """
-    Obtiene todos los tickers guardados
-    en la base de datos.
+    Imprime un resumen de los tickers guardados en la base de datos.
     """
-    return db.execute_sql_query("SELECT * FROM tickers")
+    print("Los tickers guardados en la base de datos son:")
+    for ticker, min_date, max_date in db.fetch_stats_tickers():
+        print(f"{ticker} - {min_date} <-> {max_date}")
 
-def make_ticker_plot(ticker):
+def plot_ticker(ticker):
     """
-    Genera una visualización para un ticker.
+    Grafica los datos guardados para un ticker específico.
     """
+    # TODO: show plot
     pass
+
+def prompt(message, options=[]):
+    """
+    Recibe input del usuario, el cual puede
+    ser un texto o un valor dentro de posibles opciones.
+    """
+    message += ":\n"
+    for i, option in enumerate(options):
+        message += f"  {i + 1}. {option}\n"
+    response = input(message)
+    if not options:
+        return response
+    response = int(response)
+    if response < 0 or response > len(options):
+        raise exc.OperationError
+    return response
 
 def handle_user_input():
     """
     Maneja el input del usuario mediante
     línea de comandos.
     """
-    op = input(
-        "Indique la operación a realizar:\n"
-        "  1. Actualización de datos\n"
-        "  2. Visualización de datos\n"
-    )
-
-    if op == "1":
-        ticker = input("Ingrese ticker a pedir:\n")
-        start_date = input("Ingrese fecha de inicio:\n")
-        end_date = input("Ingrese fecha de fin:\n")
-        print("Pidiendo datos...")
-        data = make_api_request(ticker, start_date, end_date)
-        save_data_to_db(data)
-        print("Datos guardados correctamente")
-    elif op == "2":
-        op = input(
-            "Indique la visualización a realizar:\n"
-            "  1. Resumen\n"
-            "  2. Gráfico de ticker\n"
-        )
-        if op == "1":
-            tickers = get_all_tickers()
-            print("Los tickers guardados en la base de datos son:")
-            for ticker in tickers:
-                print(ticker)
-        elif op == "2":
-            ticker = input("Ingrese el ticker a graficar:\n")
-            plot = make_ticker_plot(ticker)
-            # TODO: show plot
-        else:
-            raise exc.OperationError
-    else:
-        raise exc.OperationError
+    op = prompt("Indique la operación a realizar", options=[
+        "Actualización de datos",
+        "Visualización de datos"
+    ])
+    if op == 1:
+        ticker = prompt("Ingrese ticker a pedir")
+        start_date = prompt("Ingrese fecha de inicio")
+        end_date = prompt("Ingrese fecha de fin")
+        get_tickers(ticker, start_date, end_date)
+    elif op == 2:
+        op = prompt("Indique la visualización a realizar", options=[
+            "Resumen",
+            "Gráfico de ticker"
+        ])
+        if op == 1:
+            show_tickers()
+        elif op == 2:
+            ticker = prompt("Ingrese el ticker a graficar")
+            plot_ticker(ticker)
 
 def main():
     """
     Función principal del programa.
     """
     try:
-        setup()
         handle_user_input()
     except KeyboardInterrupt:
         print("\nCancelado")
@@ -108,6 +100,7 @@ def main():
         print("Operación inválida")
     except Exception:
         print("Error inesperado")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()

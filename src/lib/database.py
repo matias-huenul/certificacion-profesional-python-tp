@@ -3,6 +3,16 @@ import sqlite3
 def _execute_sql_query(query, database="tickers.db"):
     con = sqlite3.connect(database)
     cur = con.cursor()
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tickers (
+            symbol TEXT,
+            name TEXT,
+            market_cap INTEGER,
+            date TEXT
+        )
+        """
+    )
     results = cur.execute(query).fetchall()
     con.commit()
     con.close()
@@ -12,17 +22,7 @@ def insert_ticker(ticker):
     """
     Inserta un ticker en la base de datos.
     """
-    db._execute_sql_query(
-        """
-        CREATE TABLE IF NOT EXISTS ticker (
-            symbol TEXT,
-            name TEXT,
-            market_cap INTEGER,
-            date TEXT
-        )
-        """
-    )
-    db._execute_sql_query(
+    _execute_sql_query(
         f"""
         INSERT INTO tickers VALUES (
             '{ticker["symbol"]}',
@@ -37,17 +37,7 @@ def fetch_all_tickers():
     """
     Obtiene tickers de la base de datos.
     """
-    db._execute_sql_query(
-        """
-        CREATE TABLE IF NOT EXISTS ticker (
-            symbol TEXT,
-            name TEXT,
-            market_cap INTEGER,
-            date TEXT
-        )
-        """
-    )
-    return db._execute_sql_query(
+    return _execute_sql_query(
         f"""
         SELECT *
         FROM tickers
@@ -55,22 +45,11 @@ def fetch_all_tickers():
     )
 
 def fetch_stats_tickers():
-    # "select symbol, min(date), max(date) from tickers group by symbol"
     """
     Obtiene las estadísticas (primera y última fecha)
     por ticker de la base de datos.
     """
-    db._execute_sql_query(
-        """
-        CREATE TABLE IF NOT EXISTS ticker (
-            symbol TEXT,
-            name TEXT,
-            market_cap INTEGER,
-            date TEXT
-        )
-        """
-    )
-    return db._execute_sql_query(
+    return _execute_sql_query(
         f"""
         SELECT
             symbol,
