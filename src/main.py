@@ -13,6 +13,7 @@ import lib.utils as utils
 import lib.database as db
 import lib.exceptions as exc
 import lib.polygon as polygon
+import lib.plot as plot
 from time import sleep
 from datetime import datetime
 
@@ -37,15 +38,25 @@ def show_tickers():
     Imprime un resumen de los tickers guardados en la base de datos.
     """
     print("Los tickers guardados en la base de datos son:")
-    for ticker, min_date, max_date in db.fetch_stats_tickers():
-        print(f"{ticker} - {min_date} <-> {max_date}")
+    for ticker in db.fetch_stats_tickers():
+        symbol = ticker["ticker"]
+        min_date = ticker["min_date"]
+        max_date = ticker["max_date"]
+        print(f"{symbol} - {min_date} <-> {max_date}")
 
 def plot_ticker(ticker):
     """
     Grafica los datos guardados para un ticker específico.
     """
-    # TODO: show plot
-    pass
+    data = db.fetch_all_tickers(ticker=ticker)
+    plot.line_plot(
+        "Ticker",
+        data,
+        x="date",
+        y="market_cap",
+        xlabel="Fecha",
+        ylabel="Valor"
+    )
 
 def prompt(message, options=[]):
     """

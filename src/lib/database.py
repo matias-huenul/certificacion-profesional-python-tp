@@ -33,23 +33,32 @@ def insert_ticker(ticker):
         """
     )
 
-def fetch_all_tickers():
+def fetch_all_tickers(ticker=None):
     """
     Obtiene tickers de la base de datos.
     """
-    return _execute_sql_query(
+    where_clause = "" if not ticker else f"WHERE symbol = '{ticker}'"
+    rows = _execute_sql_query(
         f"""
         SELECT *
         FROM tickers
+        {where_clause}
         """
     )
+    row_to_dict = lambda row: {
+        "ticker": row[0],
+        "name": row[1],
+        "market_cap": row[2],
+        "date": row[3]
+    }
+    return [row_to_dict(row) for row in rows]
 
 def fetch_stats_tickers():
     """
     Obtiene las estadísticas (primera y última fecha)
     por ticker de la base de datos.
     """
-    return _execute_sql_query(
+    rows = _execute_sql_query(
         f"""
         SELECT
             symbol,
@@ -59,3 +68,9 @@ def fetch_stats_tickers():
         GROUP BY symbol
         """
     )
+    row_to_dict = lambda row: {
+        "ticker": row[0],
+        "min_date": row[1],
+        "max_date": row[2]
+    }
+    return [row_to_dict(row) for row in rows]
