@@ -5,24 +5,59 @@ Certificación Profesional en Python (ITBA) | Trabajo Práctico Final
 Alumno: Matías Huenul
 """
 
-class OperationError(Exception):
-    """
-    Excepción a ser lanzada ante un código de
-    operación inválido.
-    """
-    pass
+import os
+import requests
+import lib.utils as utils
+import lib.exceptions as exc
+import lib.polygon as polygon
+from datetime import datetime
 
-def make_api_request(ticker, start_date, end_date):
+POLYGON_API_TOKEN = None
+
+def setup():
+    """
+    Configura las variables necesarias para la ejecución
+    del programa. Lanza una excepción en caso de detectar
+    algún error de configuración.
+    """
+    try:
+        POLYGON_API_TOKEN = os.environ["POLYGON_API_TOKEN"]
+    except KeyError:
+        raise SetupError
+
+def get_tickers(ticker, start_date, end_date):
     """
     Realiza una llamada a la API de Ticker y devuelve
     el resultado.
     """
-    return {}
+    results = []
+    start = datetime.strptime(start_date, "%Y/%m/%d")
+    end = datetime.strptime(end_date, "%Y/%m/%d")
+    for date in utils.get_date_range(start, end):
+        data = polygon.get_ticker(
+            ticker, POLYGON_API_TOKEN, date.strftime("%Y-%m-%d"))
+        if data["status"] != "OK":
+            raise exc.APIError
+        results.append(data["results"])
+    return results
 
 def save_data_to_db(data):
     """
     Persiste información de tickers en la base
     de datos.
+    """
+    pass
+
+def get_all_tickers():
+    """
+    Obtiene todos los tickers guardados
+    en la base de datos.
+    """
+    pass
+
+def make_ticker_plot(ticker):
+    """
+    Genera una visualización para un ticker.
     """
     pass
 
@@ -61,19 +96,20 @@ def handle_user_input():
             plot = make_ticker_plot(ticker)
             # TODO: show plot
         else:
-            raise OperationError
+            raise exc.OperationError
     else:
-        raise OperationError
+        raise exc.OperationError
 
 def main():
     """
     Función principal del programa.
     """
     try:
+        setup()
         handle_user_input()
     except KeyboardInterrupt:
         print("\nCancelado")
-    except OperationError:
+    except exc.OperationError:
         print("Operación inválida")
     except Exception:
         print("Error inesperado")
