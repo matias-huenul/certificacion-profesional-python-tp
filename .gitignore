@@ -1,2 +1,5 @@
 # Archivos de pruebas
 *.ipynb
+
+# Database
+*.db

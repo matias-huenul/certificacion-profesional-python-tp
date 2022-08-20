@@ -7,7 +7,9 @@ Alumno: Matías Huenul
 
 import os
 import requests
+import sqlite3
 import lib.utils as utils
+import lib.database as db
 import lib.exceptions as exc
 import lib.polygon as polygon
 from datetime import datetime
@@ -46,14 +48,15 @@ def save_data_to_db(data):
     Persiste información de tickers en la base
     de datos.
     """
-    pass
+    db.execute_sql_query("CREATE TABLE IF NOT EXISTS tickers (tickers, dt)")
+    db.execute_sql_query("INSERT INTO tickers ('tickername', '2022-08-20')")
 
 def get_all_tickers():
     """
     Obtiene todos los tickers guardados
     en la base de datos.
     """
-    pass
+    return db.execute_sql_query("SELECT * FROM tickers")
 
 def make_ticker_plot(ticker):
     """
