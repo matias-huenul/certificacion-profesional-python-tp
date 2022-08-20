@@ -43,14 +43,6 @@ def get_tickers(ticker, start_date, end_date):
         results.append(data["results"])
     return results
 
-def save_data_to_db(data):
-    """
-    Persiste información de tickers en la base
-    de datos.
-    """
-    db.execute_sql_query("CREATE TABLE IF NOT EXISTS tickers (tickers, dt)")
-    db.execute_sql_query("INSERT INTO tickers ('tickername', '2022-08-20')")
-
 def get_all_tickers():
     """
     Obtiene todos los tickers guardados
