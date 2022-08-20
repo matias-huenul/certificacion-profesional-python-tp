@@ -33,7 +33,7 @@ def get_tickers(symbol, start_date, end_date):
                 "en la base de datos, se omite la solicitud a la API.")
             continue
         ticker = polygon.get_ticker(symbol, date)
-        sleep(10)
+        sleep(30) # TODO: Manejar casos de rate limit excedido.
         tickers.append(ticker)
     for ticker in tickers:
         db.insert_ticker(ticker)
