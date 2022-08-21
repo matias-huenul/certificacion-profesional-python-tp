@@ -1,21 +1,33 @@
 import requests
 import os
 
-POLYGON_API_URL = "https://api.polygon.io/v3/reference/tickers/AAPL"
+POLYGON_API_URL = "https://api.polygon.io/v3/reference/tickers"
+
+class TooManyRequestsError(Exception):
+    pass
+
+class NotFoundError(Exception):
+    pass
 
 def get_ticker(ticker, date):
+    """
+    Devuelve información acerca del ticker para la fecha
+    especificada.
+    En caso de error en la respuesta, lanza
+    una excepción (TooManyRequestsError o NotFoundError).
+    """
     api_key = os.environ.get("POLYGON_API_KEY")
     if not api_key:
         raise Exception("No existe la variable de entorno POLYGON_API_KEY")
-    response = requests.get(url=POLYGON_API_URL, params={
+    response = requests.get(url=f"{POLYGON_API_URL}/{ticker}", params={
             "apiKey": api_key,
             "date": date
-        })
-    response.raise_for_status()
+    })
+    if response.status_code == 429:
+        raise TooManyRequestsError
+    if response.status_code == 404:
+        raise NotFoundError
     data = response.json()
-    status = data["status"]
-    if status != "OK":
-        raise Exception(f"Error de API (status={status})")
     result =  data["results"]
     return {
         "symbol": result["ticker"],

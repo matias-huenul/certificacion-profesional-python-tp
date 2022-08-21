@@ -5,17 +5,15 @@ Certificación Profesional en Python (ITBA) | Trabajo Práctico Final
 Alumno: Matías Huenul
 """
 
-import os
 import traceback
-import requests
-import sqlite3
+from time import sleep
+from datetime import datetime
+
+import lib.plot as plot
 import lib.utils as utils
 import lib.database as db
 import lib.exceptions as exc
 import lib.polygon as polygon
-import lib.plot as plot
-from time import sleep
-from datetime import datetime
 
 def get_tickers(symbol, start_date, end_date):
     """
@@ -32,12 +30,29 @@ def get_tickers(symbol, start_date, end_date):
             print(f"Ticker {symbol} con fecha {date} ya existente "
                 "en la base de datos, se omite la solicitud a la API.")
             continue
-        ticker = polygon.get_ticker(symbol, date)
-        sleep(30) # TODO: Manejar casos de rate limit excedido.
-        tickers.append(ticker)
+        k = 0
+        max_failed_attempts = 3
+        while k < max_failed_attempts:
+            try:
+                ticker = polygon.get_ticker(symbol, date)
+                tickers.append(ticker)
+                break
+            except polygon.TooManyRequestsError:
+                print("Se excedió el rate limit de la API - Reintentando.")
+                k += 1
+                sleep(k ** 3)
+            except polygon.NotFoundError:
+                print("No se encontró el ticker solicitado.")
+                return
+        if k == max_failed_attempts:
+            print(
+                "Se excedió el rate limit de la API, "
+                "algunos resultados no pudieron ser recuperados."
+            )
     for ticker in tickers:
         db.insert_ticker(ticker)
-    print("Datos guardados correctamente")
+    if tickers:
+        print("Datos guardados correctamente.")
 
 def show_tickers():
     """
@@ -64,46 +79,49 @@ def plot_ticker(ticker):
         ylabel="Valor"
     )
 
-def prompt(message, options=[]):
-    """
-    Recibe input del usuario, el cual puede
-    ser un texto o un valor dentro de posibles opciones.
-    """
-    message += ":\n"
-    for i, option in enumerate(options):
-        message += f"  {i + 1}. {option}\n"
-    response = input(message)
-    if not options:
-        return response
-    response = int(response)
-    if response < 0 or response > len(options):
-        raise exc.OperationError
-    return response
+def export_tickers_to_csv(filename, ticker, start_date, end_date):
+    if not filename.endswith(".csv"):
+        filename += ".csv"
+    data = db.fetch_all_tickers(ticker=ticker, start_date=start_date, end_date=end_date)
+    utils.export_to_csv(filename, data)
+    print("Se exportaron los datos exitosamente.")
 
 def handle_user_input():
     """
     Maneja el input del usuario mediante
     línea de comandos.
     """
-    op = prompt("Indique la operación a realizar", options=[
+    op = utils.prompt("Indique la operación a realizar", options=[
         "Actualización de datos",
-        "Visualización de datos"
+        "Visualización de datos",
+        "Exportación de datos"
     ])
     if op == 1:
-        ticker = prompt("Ingrese ticker a pedir")
-        start_date = prompt("Ingrese fecha de inicio")
-        end_date = prompt("Ingrese fecha de fin")
+        ticker = utils.prompt("Ingrese ticker a pedir")
+        start_date = utils.prompt("Ingrese fecha de inicio")
+        end_date = utils.prompt("Ingrese fecha de fin")
         get_tickers(ticker, start_date, end_date)
     elif op == 2:
-        op = prompt("Indique la visualización a realizar", options=[
+        op = utils.prompt("Indique la visualización a realizar", options=[
             "Resumen",
             "Gráfico de ticker"
         ])
         if op == 1:
             show_tickers()
         elif op == 2:
-            ticker = prompt("Ingrese el ticker a graficar")
+            ticker = utils.prompt("Ingrese el ticker a graficar")
             plot_ticker(ticker)
+    elif op == 3:
+        filename = utils.prompt("Ingrese el nombre del archivo a generar")
+        ticker = utils.prompt(
+            "Ingrese ticker a exportar (o vacío para exportar todos)")
+        start_date = utils.prompt(
+            "Ingrese fecha de inicio a exportar "
+            "(o vacío para exportar desde la primer fecha disponible)")
+        end_date = utils.prompt(
+            "Ingrese fecha de fin a exportar "
+            "(o vacío para exportar hasta la última fecha disponible)")
+        export_tickers_to_csv(filename, ticker, start_date, end_date)
 
 def main():
     """
@@ -112,11 +130,9 @@ def main():
     try:
         handle_user_input()
     except KeyboardInterrupt:
-        print("\nCancelado")
-    except exc.OperationError:
-        print("Operación inválida")
+        print("\nCancelado.")
     except Exception:
-        print("Error inesperado")
+        print("Error inesperado.")
         traceback.print_exc()
 
 if __name__ == "__main__":

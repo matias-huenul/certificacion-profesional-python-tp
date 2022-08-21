@@ -40,7 +40,16 @@ def fetch_all_tickers(**filters):
     """
     where_clause = "" if not filters else "WHERE "
     for key, value in filters.items():
-        where_clause += f"{key} = '{value}' AND "
+        if not value:
+            continue
+        elif key == "start_date":
+            where_clause += f"date >= '{value}' AND "
+        elif key == "end_date":
+            where_clause += f"date <= '{value}' AND "
+        else:
+            where_clause += f"{key} = '{value}' AND "
+    print(where_clause)
+    where_clause = where_clause if where_clause != "WHERE " else ""
     where_clause = where_clause.rstrip(" AND ")
     rows = _execute_sql_query(
         f"""
