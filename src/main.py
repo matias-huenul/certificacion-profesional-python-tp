@@ -21,8 +21,8 @@ def get_tickers(symbol, start_date, end_date):
     """
     print("Pidiendo datos...")
     tickers = []
-    start = datetime.strptime(start_date, "%Y/%m/%d")
-    end = datetime.strptime(end_date, "%Y/%m/%d")
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
     for dt in utils.get_date_range(start, end):
         date = dt.strftime("%Y-%m-%d")
         if db.fetch_all_tickers(symbol=symbol, date=date):
