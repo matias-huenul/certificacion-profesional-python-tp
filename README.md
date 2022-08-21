@@ -10,7 +10,7 @@ pip install -r requirements.txt
 
 2. Crear la variable de entorno con la clave de la API de Polygon.
 ```
-POLYGON_API_KEY=<clave>
+export POLYGON_API_KEY=<clave>
 ```
 
 3. Posicionarse en la carpeta `src` y ejecutar el script.

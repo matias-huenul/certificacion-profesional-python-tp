@@ -13,7 +13,6 @@ def _execute_sql_query(query, database="tickers.db"):
         )
         """
     )
-    print(query)
     results = cur.execute(query).fetchall()
     con.commit()
     con.close()
@@ -48,7 +47,6 @@ def fetch_all_tickers(**filters):
             where_clause += f"date <= '{value}' AND "
         else:
             where_clause += f"{key} = '{value}' AND "
-    print(where_clause)
     where_clause = where_clause if where_clause != "WHERE " else ""
     where_clause = where_clause.rstrip(" AND ")
     rows = _execute_sql_query(

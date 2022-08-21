@@ -5,14 +5,11 @@ Certificación Profesional en Python (ITBA) | Trabajo Práctico Final
 Alumno: Matías Huenul
 """
 
-import traceback
-from time import sleep
-from datetime import datetime
-
 import lib.plot as plot
 import lib.utils as utils
 import lib.database as db
 import lib.polygon as polygon
+from time import sleep
 
 def get_tickers(symbol, start_date, end_date):
     """
@@ -21,10 +18,7 @@ def get_tickers(symbol, start_date, end_date):
     """
     print("Pidiendo datos...")
     tickers = []
-    start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = datetime.strptime(end_date, "%Y-%m-%d")
-    for dt in utils.get_date_range(start, end):
-        date = dt.strftime("%Y-%m-%d")
+    for date in utils.get_date_range(start_date, end_date):
         if db.fetch_all_tickers(symbol=symbol, date=date):
             print(f"Ticker {symbol} con fecha {date} ya existente "
                 "en la base de datos, se omite la solicitud a la API.")
@@ -34,15 +28,19 @@ def get_tickers(symbol, start_date, end_date):
         while k < max_failed_attempts:
             try:
                 ticker = polygon.get_ticker(symbol, date)
-                tickers.append(ticker)
+                if ticker:
+                    tickers.append(ticker)
                 break
-            except polygon.TooManyRequestsError:
-                print("Se excedió el rate limit de la API - Reintentando.")
-                k += 1
-                sleep(k ** 3)
+            except polygon.APIKeyNotFoundError:
+                print("No se especificó la API key de Polygon.")
+                return
             except polygon.NotFoundError:
                 print("No se encontró el ticker solicitado.")
                 return
+            except polygon.TooManyRequestsError:
+                print("Se excedió el rate limit de la API, reintentando.")
+                k += 1
+                sleep(k ** 3)
         if k == max_failed_attempts:
             print(
                 "Se excedió el rate limit de la API, "
@@ -52,6 +50,8 @@ def get_tickers(symbol, start_date, end_date):
         db.insert_ticker(ticker)
     if tickers:
         print("Datos guardados correctamente.")
+    else:
+        print("No hay datos nuevos a guardar.")
 
 def show_tickers():
     """
@@ -78,11 +78,14 @@ def plot_ticker(ticker):
         ylabel="Valor"
     )
 
-def export_tickers_to_csv(filename, symbol, start_date, end_date):
-    if not filename.endswith(".csv"):
-        filename += ".csv"
+def export_tickers_to_file(filename, symbol, start_date, end_date, file_format):
+    if not filename.endswith(f".{file_format}"):
+        filename += f".{file_format}"
     data = db.fetch_all_tickers(symbol=symbol, start_date=start_date, end_date=end_date)
-    utils.export_to_csv(filename, data)
+    if file_format == "csv":
+        utils.export_to_csv(filename, data)
+    elif file_format == "json":
+        utils.export_to_json(filename, data)
     print("Se exportaron los datos exitosamente.")
 
 def handle_user_input():
@@ -111,6 +114,10 @@ def handle_user_input():
             ticker = utils.prompt("Ingrese el ticker a graficar")
             plot_ticker(ticker)
     elif op == 3:
+        file_format = utils.prompt(
+            "Ingrese el formato de exportación",
+            options=["csv", "json"]
+        )
         filename = utils.prompt("Ingrese el nombre del archivo a generar")
         symbol = utils.prompt(
             "Ingrese ticker a exportar (o vacío para exportar todos)")
@@ -120,7 +127,13 @@ def handle_user_input():
         end_date = utils.prompt(
             "Ingrese fecha de fin a exportar "
             "(o vacío para exportar hasta la última fecha disponible)")
-        export_tickers_to_csv(filename, symbol, start_date, end_date)
+        export_tickers_to_file(
+            filename,
+            symbol,
+            start_date,
+            end_date,
+            file_format="csv" if file_format == 1 else "json"
+        )
 
 def main():
     """
@@ -130,9 +143,8 @@ def main():
         handle_user_input()
     except KeyboardInterrupt:
         print("\nCancelado.")
-    except Exception:
-        print("Error inesperado.")
-        traceback.print_exc()
+    except Exception as e:
+        print(f"Error inesperado: {e}")
 
 if __name__ == "__main__":
     main()
