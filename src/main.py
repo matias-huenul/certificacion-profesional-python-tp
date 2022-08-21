@@ -12,7 +12,6 @@ from datetime import datetime
 import lib.plot as plot
 import lib.utils as utils
 import lib.database as db
-import lib.exceptions as exc
 import lib.polygon as polygon
 
 def get_tickers(symbol, start_date, end_date):
