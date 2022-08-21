@@ -60,5 +60,8 @@ def print_as_table(data_list):
     print()
     for data in data_list:
         for key, value in data.items():
-            print(f"{value}" + ((max_len[key] - len(str(value)) + 2) * " "), end="")
+            print(
+                f"{value}" + ((max_len[key] - len(str(value)) + 2) * " "),
+                end=""
+            )
         print()
