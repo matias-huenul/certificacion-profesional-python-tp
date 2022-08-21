@@ -79,10 +79,10 @@ def plot_ticker(ticker):
         ylabel="Valor"
     )
 
-def export_tickers_to_csv(filename, ticker, start_date, end_date):
+def export_tickers_to_csv(filename, symbol, start_date, end_date):
     if not filename.endswith(".csv"):
         filename += ".csv"
-    data = db.fetch_all_tickers(ticker=ticker, start_date=start_date, end_date=end_date)
+    data = db.fetch_all_tickers(symbol=symbol, start_date=start_date, end_date=end_date)
     utils.export_to_csv(filename, data)
     print("Se exportaron los datos exitosamente.")
 
@@ -113,7 +113,7 @@ def handle_user_input():
             plot_ticker(ticker)
     elif op == 3:
         filename = utils.prompt("Ingrese el nombre del archivo a generar")
-        ticker = utils.prompt(
+        symbol = utils.prompt(
             "Ingrese ticker a exportar (o vacío para exportar todos)")
         start_date = utils.prompt(
             "Ingrese fecha de inicio a exportar "
@@ -121,7 +121,7 @@ def handle_user_input():
         end_date = utils.prompt(
             "Ingrese fecha de fin a exportar "
             "(o vacío para exportar hasta la última fecha disponible)")
-        export_tickers_to_csv(filename, ticker, start_date, end_date)
+        export_tickers_to_csv(filename, symbol, start_date, end_date)
 
 def main():
     """
