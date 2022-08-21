@@ -69,6 +69,9 @@ def plot_ticker(ticker):
     Grafica los datos guardados para un ticker específico.
     """
     data = db.fetch_all_tickers(symbol=ticker)
+    if not data:
+        print("No se encontraron datos para el ticker solicitado.")
+        return
     plot.line_plot(
         f"Visualización del ticker {ticker}",
         data,
@@ -134,6 +137,10 @@ def handle_user_input():
             end_date,
             file_format="csv" if file_format == 1 else "json"
         )
+    
+    op = utils.prompt("¿Desea realizar otra operación?", options=["Sí", "No"])
+    if op == 1:
+        handle_user_input()
 
 def main():
     """
