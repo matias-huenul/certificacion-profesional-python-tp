@@ -44,3 +44,21 @@ def export_to_csv(filename, data):
 def export_to_json(filename, data):
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def print_as_table(data_list):
+    max_len = {}
+    for data in data_list:
+        for key, value in data.items():
+            max_len[key] = max(max_len.get(key, 0), len(str(key)))
+            max_len[key] = max(max_len.get(key, 0), len(str(value)))
+    for key in data_list[0].keys():
+        print(f"{key}" + ((max_len[key] - len(str(key)) + 2) * " "), end="")
+    print()
+    for key in data_list[0].keys():
+        print((max_len[key] * "-" + "  "), end="")
+    print()
+    for data in data_list:
+        for key, value in data.items():
+            print(f"{value}" + ((max_len[key] - len(str(value)) + 2) * " "), end="")
+        print()

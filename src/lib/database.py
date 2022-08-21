@@ -73,15 +73,23 @@ def fetch_stats_tickers():
         f"""
         SELECT
             symbol,
+            name,
             MIN(date),
-            MAX(date)
+            MAX(date),
+            COUNT(*),
+            AVG(value)
         FROM tickers
-        GROUP BY symbol
+        GROUP BY
+            symbol,
+            name
         """
     )
     row_to_dict = lambda row: {
         "ticker": row[0],
-        "min_date": row[1],
-        "max_date": row[2]
+        "name": row[1],
+        "min_date": row[2],
+        "max_date": row[3],
+        "count": row[4],
+        "avg_value": row[5],
     }
     return [row_to_dict(row) for row in rows]

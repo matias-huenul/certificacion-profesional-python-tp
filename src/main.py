@@ -40,7 +40,7 @@ def get_tickers(symbol, start_date, end_date):
             except polygon.TooManyRequestsError:
                 print("Se excedió el rate limit de la API, reintentando.")
                 k += 1
-                sleep(k ** 3)
+                sleep(2 ** (k + 1))
         if k == max_failed_attempts:
             print(
                 "Se excedió el rate limit de la API, "
@@ -57,12 +57,12 @@ def show_tickers():
     """
     Imprime un resumen de los tickers guardados en la base de datos.
     """
+    tickers = db.fetch_stats_tickers()
+    if not tickers:
+        print("No hay información en la base de datos.")
+        return
     print("Los tickers guardados en la base de datos son:")
-    for ticker in db.fetch_stats_tickers():
-        symbol = ticker["ticker"]
-        min_date = ticker["min_date"]
-        max_date = ticker["max_date"]
-        print(f"{symbol} - {min_date} <-> {max_date}")
+    utils.print_as_table(tickers)
 
 def plot_ticker(ticker):
     """
