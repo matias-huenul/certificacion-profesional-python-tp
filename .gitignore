@@ -6,3 +6,15 @@ __pycache__
 
 # Database
 *.db
+
+# Archivos de Latex
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.log
+*.synctex.gz
+*.toc
+*_latexindent_temp.tex
