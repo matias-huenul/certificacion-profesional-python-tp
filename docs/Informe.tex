@@ -17,8 +17,52 @@ Trabajo Práctico Final}
 \newpage
 
 \section{Introducción}
+En este trabajo práctico se desarrolló un programa de línea de comandos en Python para
+obtener información de una API de finanzas, almacenarlas en una base de datos local SQLite3
+y graficarlos usando Matplotlib.
 
 \section{Diseño de la aplicación}
+La aplicación se estructuró en módulos reutilizables, y un script principal que se encarga
+del flujo del programa y la interacción con el usuario.
+
+\subsection{Base de datos}
+El módulo \textbf{database} contiene las funciones necesarias para realizar consultas
+sobre la base de datos. En este caso, se utilizó el motor \textbf{SQLite3},
+y se definió una única base de datos almacenada en el archivo \textbf{tickers.db}.
+La misma posee una tabla, \textbf{tickers}, la cual almacena los valores por ticker y fecha, y
+tiene la siguiente estructura.
+
+\begin{itemize}
+    \item \textbf{symbol (string):} Símbolo que identifica a un ticker.
+    \item \textbf{name (string):} Nombre del ticker.
+    \item \textbf{value (real):} Valor del ticker.
+    \item \textbf{date (string):} Fecha correspondiente al dato.
+\end{itemize}
+
+\subsection{Visualizaciones}
+El módulo \textbf{plot} contiene una función para realizar gráficos de tipo \textbf{line plot}
+utilizando la biblioteca \textbf{Matplotlib}.
+
+\subsection{Interacción con la API de Polygon}
+El módulo \textbf{polygon} contiene las funciones para comunicarse con la Rest API de Polygon.
+Se define la función \textbf{get\_tickers}, la cual realiza un request
+de tipo \textbf{GET} al endpoint \textbf{/v3/reference/tickers/\{ticker\}} y devuelve un diccionario con
+los datos de un ticker para una fecha dada. En particular, se devuelven los campos que serán
+almacenados en la base de datos, siendo calculado el valor del ticker
+como $value = \frac{market\_cap}{weighted\_shares\_outstanding}$, de acuerdo a la documentación oficial
+de la API.
+
+\subsection{Utilidades}
+El módulo \textbf{utils} posee funciones útiles para el programa, como funciones de cálculo de
+fechas, escritura a archivos e interacción con el usuario.
+
+\subsection{Flujo del programa}
+La lógica principal del programa se encuentra en el script \textbf{main.py}. El mismo ejecuta
+un \textbf{wizard} que interactua con el usuario y lo guía a través de las distintas operaciones
+disponibles, las cuales se pueden categorizar en tres grupos: \textbf{actualización},
+\textbf{visualización} y \textbf{exportación} de datos.
+Si el usuario elige la primera, se debe ingresar el nombre del ticker a consultar, y las fechas
+de inicio y fin de la consulta.
 
 \section{Conclusiones}
 

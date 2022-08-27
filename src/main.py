@@ -110,8 +110,8 @@ def handle_user_input():
     ])
     if op == 1:
         ticker = utils.prompt("Ingrese ticker a pedir")
-        start_date = utils.prompt("Ingrese fecha de inicio")
-        end_date = utils.prompt("Ingrese fecha de fin")
+        start_date = utils.prompt("Ingrese fecha de inicio", validate_date=True)
+        end_date = utils.prompt("Ingrese fecha de fin", validate_date=True)
         get_tickers(ticker, start_date, end_date)
     elif op == 2:
         op = utils.prompt("Indique la visualización a realizar", options=[
@@ -133,10 +133,12 @@ def handle_user_input():
             "Ingrese ticker a exportar (o vacío para exportar todos)")
         start_date = utils.prompt(
             "Ingrese fecha de inicio a exportar "
-            "(o vacío para exportar desde la primer fecha disponible)")
+            "(o vacío para exportar desde la primer fecha disponible)",
+            validate_date=True)
         end_date = utils.prompt(
             "Ingrese fecha de fin a exportar "
-            "(o vacío para exportar hasta la última fecha disponible)")
+            "(o vacío para exportar hasta la última fecha disponible)",
+            validate_date=True)
         export_tickers_to_file(
             filename,
             symbol,
