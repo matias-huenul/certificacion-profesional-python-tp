@@ -1,7 +1,10 @@
 import sqlite3
 
-def _execute_sql_query(query, database="tickers.db"):
-    con = sqlite3.connect(database)
+class DatabaseInvalidParameterError(Exception):
+    pass
+
+def _execute_sql_query(query, parameters=[]):
+    con = sqlite3.connect("tickers.db")
     cur = con.cursor()
     cur.execute(
         """
@@ -13,7 +16,7 @@ def _execute_sql_query(query, database="tickers.db"):
         )
         """
     )
-    results = cur.execute(query).fetchall()
+    results = cur.execute(query, parameters).fetchall()
     con.commit()
     con.close()
     return results
@@ -23,30 +26,30 @@ def insert_ticker(ticker):
     Inserta un ticker en la base de datos.
     """
     _execute_sql_query(
-        f"""
-        INSERT INTO tickers VALUES (
-            '{ticker["symbol"]}',
-            '{ticker["name"]}',
-            '{ticker["value"]}',
-            '{ticker["date"]}'
-        )
-        """
+        "INSERT INTO tickers VALUES (?, ?, ?, ?)",
+        [ticker["symbol"], ticker["name"], ticker["value"], ticker["date"]]
     )
 
 def fetch_all_tickers(**filters):
     """
     Obtiene tickers de la base de datos.
     """
+    parameters = []
     where_clause = "" if not filters else "WHERE "
     for key, value in filters.items():
+        if key not in ("symbol", "name", "value", "date", "start_date", "end_date"):
+            raise DatabaseInvalidParameterError
         if not value:
             continue
         elif key == "start_date":
-            where_clause += f"date >= '{value}' AND "
+            where_clause += f"date >= ? AND "
+            parameters.append(value)
         elif key == "end_date":
-            where_clause += f"date <= '{value}' AND "
+            where_clause += f"date <= ? AND "
+            parameters.append(value)
         else:
-            where_clause += f"{key} = '{value}' AND "
+            where_clause += f"{key} = ? AND "
+            parameters.append(value)
     where_clause = where_clause if where_clause != "WHERE " else ""
     where_clause = where_clause.rstrip(" AND ")
     rows = _execute_sql_query(
@@ -54,7 +57,8 @@ def fetch_all_tickers(**filters):
         SELECT *
         FROM tickers
         {where_clause}
-        """
+        """,
+        parameters
     )
     row_to_dict = lambda row: {
         "ticker": row[0],

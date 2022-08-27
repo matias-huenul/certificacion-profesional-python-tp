@@ -18,6 +18,7 @@ def get_tickers(symbol, start_date, end_date):
     """
     print("Pidiendo datos...")
     tickers = []
+    rate_limit_exceeded = False
     for date in utils.get_date_range(start_date, end_date):
         if db.fetch_all_tickers(symbol=symbol, date=date):
             print(f"Ticker {symbol} con fecha {date} ya existente "
@@ -30,6 +31,7 @@ def get_tickers(symbol, start_date, end_date):
                 ticker = polygon.get_ticker(symbol, date)
                 if ticker:
                     tickers.append(ticker)
+                sleep(1)
                 break
             except polygon.APIKeyNotFoundError:
                 print("No se especificó la API key de Polygon.")
@@ -38,13 +40,17 @@ def get_tickers(symbol, start_date, end_date):
                 print("No se encontró el ticker solicitado.")
                 return
             except polygon.TooManyRequestsError:
-                k += 1
-                sleep(3 * k)
+                # Se excedió el rate limit de la API.
+                # Se reintentará en 10 segundos.
+                print("Se excedió el rate limit de la API, reintentando.")
+                sleep(10)
         if k == max_failed_attempts:
-            print(
-                "Se excedió el rate limit de la API, "
-                "algunos resultados no pudieron ser recuperados."
-            )
+            rate_limit_exceeded = True
+    if rate_limit_exceeded:
+        print(
+            "Se excedió el rate limit de la API, "
+            "algunos resultados no pudieron ser recuperados."
+        )
     for ticker in tickers:
         db.insert_ticker(ticker)
     if tickers:
