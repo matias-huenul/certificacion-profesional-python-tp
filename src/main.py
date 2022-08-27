@@ -82,6 +82,10 @@ def plot_ticker(ticker):
     )
 
 def export_tickers_to_file(filename, symbol, start_date, end_date, file_format):
+    """
+    Exporta la información almacenada en la base de datos
+    a un archivo en formato csv o json.
+    """
     if not filename.endswith(f".{file_format}"):
         filename += f".{file_format}"
     data = db.fetch_all_tickers(symbol=symbol, start_date=start_date, end_date=end_date)
