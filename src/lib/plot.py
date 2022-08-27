@@ -11,9 +11,9 @@ def line_plot(title, data, x, xlabel, y, ylabel):
     ax.set_facecolor("#f5f0ed")
     ax.grid(color="#ffffff")
 
-    ax.set_title(title)#, fontdict={"fontsize": 16})
-    ax.set_xlabel(xlabel)#, fontdict={"fontsize": 12})
-    ax.set_ylabel(ylabel)#, fontdict={"fontsize": 12})
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
