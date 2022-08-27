@@ -77,7 +77,7 @@ def fetch_stats_tickers():
             MIN(date),
             MAX(date),
             COUNT(*),
-            AVG(value)
+            ROUND(AVG(value), 2)
         FROM tickers
         GROUP BY
             symbol,

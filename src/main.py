@@ -38,9 +38,9 @@ def get_tickers(symbol, start_date, end_date):
                 print("No se encontró el ticker solicitado.")
                 return
             except polygon.TooManyRequestsError:
-                print("Se excedió el rate limit de la API, reintentando.")
+                # print("Se excedió el rate limit de la API, reintentando.")
                 k += 1
-                sleep(2 ** (k + 1))
+                sleep(3 * k)
         if k == max_failed_attempts:
             print(
                 "Se excedió el rate limit de la API, "
