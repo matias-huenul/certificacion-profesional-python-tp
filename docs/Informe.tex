@@ -44,8 +44,8 @@ El módulo \textbf{plot} contiene una función para realizar gráficos de tipo \
 utilizando la biblioteca \textbf{Matplotlib}.
 
 \subsection{Interacción con la API de Polygon}
-El módulo \textbf{polygon} contiene las funciones para comunicarse con la Rest API de Polygon.
-Se define la función \textbf{get\_tickers}, la cual realiza un request
+El módulo \textbf{polygon} contiene las funciones para comunicarse con la API de
+Polygon \cite{polygon_api}. Se define la función \textbf{get\_tickers}, la cual realiza un request
 de tipo \textbf{GET} al endpoint \textbf{/v3/reference/tickers/\{ticker\}} y devuelve un diccionario con
 los datos de un ticker para una fecha dada. En particular, se devuelven los campos que serán
 almacenados en la base de datos, siendo calculado el valor del ticker
@@ -60,12 +60,70 @@ fechas, escritura a archivos e interacción con el usuario.
 La lógica principal del programa se encuentra en el script \textbf{main.py}. El mismo ejecuta
 un \textbf{wizard} que interactua con el usuario y lo guía a través de las distintas operaciones
 disponibles, las cuales se pueden categorizar en tres grupos: \textbf{actualización},
-\textbf{visualización} y \textbf{exportación} de datos.
-Si el usuario elige la primera, se debe ingresar el nombre del ticker a consultar, y las fechas
-de inicio y fin de la consulta.
+\textbf{visualización} y \textbf{exportación} de datos. Cabe destacar que, en cada paso de la
+interacción con el usuario, se valida que la opción ingresada sea válida, y en caso de que no lo sea,
+se vuelve a solicitar. Al finalizar la operación, se da la opción de realizar otra, y en caso de que
+la respuesta sea negativa, se finaliza la ejecución del programa.
+
+\subsubsection{Actualización de datos}
+Para esta operación, se debe ingresar el símbolo del ticker a consultar, y las fechas
+de inicio y fin de la consulta, en formato \textbf{yyyy-mm-dd}. Luego de recibir estos parámetros,
+el programa realiza una solicitud a la API y guarda los resultados en la base de datos, imprimiendo
+por salida estándar si la operación fue exitosa.
+
+Es importante notar que, debido a que la API sólo
+permite solicitudes por fecha y no por intervalos, es necesario realizar una solicitud por cada día
+en el intervalo desde la fecha de inicio hasta la fecha de fin. Esto quiere decir, que si por ejemplo
+se solicitan datos entre \textbf{2022-01-01} y \textbf{2022-01-03}, se realizarán \textbf{3} requests
+a la API. Esto puede traer complicaciones debido al \textbf{rate limit} que establece Polygon. En
+caso de exceder este límite, la API devuelve respuestas con código \textbf{429 Too Many Requests},
+y en estos casos, se esperan 10 segundos y se reintenta hasta tres veces. Se observó experimentalmente
+que con estos tiempos de espera y número de reintentos, se logra evitar el problema la mayoría de las
+veces, pero no siempre. Por ello se implementó un manejo de errores inteligente
+de forma tal que aún si ciertos datos no pudieron ser recuperados, los que sí se hayan podido recuperar
+se guardan de todas formas y se imprime un mensaje al usuario informando de esto.
+
+Adicionalmente, si la información de un ticker para una fecha dada ya existe en la base de datos,
+el programa no volverá a solicitarlo en próximas operaciones. De esta manera, si en una ejecución
+se pidió un cierto intervalo, del cual sólo unos cuantos no pudieron ser recuperados, en una próxima
+ejecución sólo estos datos faltantes serán solicitados a la API.
+
+\subsubsection{Visualización de datos}
+Dentro de esta categoría se tiene dos opciones.
+\begin{itemize}
+    \item \textbf{Resumen:} Esta operación imprime por línea de comandos resultados agregados por
+    ticker (primera y última fecha de datos, cantidad de registros y valor promedio).
+    \item \textbf{Gráfico de ticker:} Esta operación recibe un símbolo de ticker y muestra un
+    gráfico del mismo según lo almacenado en la base de datos.
+\end{itemize}
+
+\subsubsection{Exportación de datos}
+Esta operación permite generar un archivo de texto plano con los datos de la base de datos.
+Recibe un nombre de archivo a generar, un formato (csv o json), un símbolo de ticker
+y las fechas a exportar. En caso de no ingresar un ticker, se tomarán los datos de todos los tickers.
+En caso de no especificar fecha de inicio, se tomarán los datos desde
+la primera fecha disponible, y en caso de no especificar fecha de fin, se tomarán los datos hasta
+la última fecha disponible.
 
 \section{Conclusiones}
+En el desarrollo de este programa se utilizaron diversas tecnologías y se aprendió a modularizar
+un proyecto de forma tal que cada componente pueda interactuar para realizar una tarea en específico.
+Estos conocimientos adquiridos se pueden resumir en la siguiente lista.
+\begin{itemize}
+    \item Creación e interacción con una base de datos \textbf{SQLite3}.
+    \item Realización de requests HTTP a una API.
+    \item Interacción con un usuario por línea de comandos.
+    \item Manejo de errores en tiempo de ejecución.
+    \item Creación de visualizaciones con \textbf{Matplotlib}.
+    \item Escritura de información en archivos de texto en formatos \textbf{CSV} y \textbf{JSON}.
+\end{itemize}
 
-\bibliographystyle{alpha}
-\bibliography{sample}
+\begin{thebibliography}{9} 
+	\bibitem{polygon_api}
+		Stocks API - Polygon.io\\
+		Ticker Details v3\\
+		\url{https://polygon.io/docs/stocks/get_v3_reference_tickers__ticker}
+	 
+\end{thebibliography}
+
 \end{document}
