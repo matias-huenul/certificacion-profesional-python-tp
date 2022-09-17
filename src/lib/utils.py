@@ -4,6 +4,9 @@ from datetime import datetime
 from datetime import timedelta
 
 def get_date_range(start_date, end_date, fmt="%Y-%m-%d"):
+    """
+    Devuelve las fechas en el intervalo [start_date, end_date].
+    """
     start = datetime.strptime(start_date, fmt)
     end = datetime.strptime(end_date, fmt)
     dates = []
@@ -42,6 +45,9 @@ def prompt(message, options=[], validate_date=False):
     return response
 
 def export_to_csv(filename, data):
+    """
+    Exporta datos a un archivo en formato csv.
+    """
     with open(filename, "w") as f:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
         writer.writeheader()
@@ -49,11 +55,17 @@ def export_to_csv(filename, data):
             writer.writerow(item)
 
 def export_to_json(filename, data):
+    """
+    Exporta datos a un archivo en formato json.
+    """
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
 
 
 def print_as_table(data_list):
+    """
+    Imprime datos en forma de tabla.
+    """
     max_len = {}
     for data in data_list:
         for key, value in data.items():

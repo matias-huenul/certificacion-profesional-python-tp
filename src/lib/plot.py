@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 
 def line_plot(title, data, x, xlabel, y, ylabel):
+    """
+    Realiza un gráfico de línea para los datos especificados.
+    """
     x_values = [item[x] for item in data]
     y_values = [item[y] for item in data]
     fig, ax = plt.subplots()

@@ -4,6 +4,9 @@ class DatabaseInvalidParameterError(Exception):
     pass
 
 def _execute_sql_query(query, parameters=[]):
+    """
+    Ejecuta una consulta sobre la base de datos.
+    """
     con = sqlite3.connect("tickers.db")
     cur = con.cursor()
     cur.execute(

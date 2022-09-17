@@ -1,4 +1,4 @@
-# TP Final de la certificación profesional de Python (ITBA)
+# TP Final Certificación Profesional Python (ITBA)
 - Alumno: Matías Huenul
 
 ## Ejecución del programa
