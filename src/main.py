@@ -130,15 +130,15 @@ def handle_user_input():
         )
         filename = utils.prompt("Ingrese el nombre del archivo a generar")
         symbol = utils.prompt(
-            "Ingrese ticker a exportar (o vacío para exportar todos)")
+            "Ingrese ticker a exportar (o vacío para exportar todos)", allow_null=True)
         start_date = utils.prompt(
             "Ingrese fecha de inicio a exportar "
             "(o vacío para exportar desde la primer fecha disponible)",
-            validate_date=True)
+            validate_date=True, allow_null=True)
         end_date = utils.prompt(
             "Ingrese fecha de fin a exportar "
             "(o vacío para exportar hasta la última fecha disponible)",
-            validate_date=True)
+            validate_date=True, allow_null=True)
         export_tickers_to_file(
             filename,
             symbol,

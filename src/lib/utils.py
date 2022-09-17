@@ -15,7 +15,7 @@ def get_date_range(start_date, end_date, fmt="%Y-%m-%d"):
         dates.append(date.strftime(fmt))
     return dates
 
-def prompt(message, options=[], validate_date=False):
+def prompt(message, options=[], validate_date=False, allow_null=False):
     """
     Recibe input del usuario, el cual puede
     ser un texto o un valor dentro de posibles opciones.
@@ -31,7 +31,12 @@ def prompt(message, options=[], validate_date=False):
                     datetime.strptime(response, "%Y-%m-%d")
                     break
                 except ValueError:
+                    if allow_null and not response:
+                        return response
                     response = input("Fecha inválida.\n> ")
+        if not allow_null:
+            while not response:
+                response = input("Opción inválida.\n> ")
         return response
     while True:
         try:
